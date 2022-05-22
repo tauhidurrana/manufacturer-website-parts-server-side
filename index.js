@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -20,12 +20,19 @@ async function run(){
     try{
         await client.connect();
         const productCollection = client.db('computer-parts-manufacturer').collection('products');
-
+        // get all products API
         app.get('/products', async (req, res) => {
             const query = {};
             const cursor = productCollection.find(query);
             const products = await cursor.toArray();
             res.send(products);
+        })
+
+        app.get('/products/:id', async (req, res) =>{
+            const id =  req.params.id;
+            const query = { _id: ObjectId(id) };
+            const product = await productCollection.findOne(query);
+            res.send(product);
         })
     }
     finally{
