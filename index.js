@@ -46,6 +46,12 @@ async function run(){
           res.send(orders);
         })
 
+        // get all users from user collection
+        app.get('/user', async (req, res)=>{
+          const users = await userCollection.find().toArray();
+          res.send(users);
+        })
+
         // post orders to database
         app.post('/order', async (req, res) =>{
           const order = req.body;
