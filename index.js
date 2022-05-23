@@ -20,6 +20,9 @@ async function run(){
     try{
         await client.connect();
         const productCollection = client.db('computer-parts-manufacturer').collection('products');
+        const orderCollection = client.db('computer-parts-manufacturer').collection('orders');
+        const userCollection = client.db('computer-parts-manufacturer').collection('users');
+       
         // get all products API
         app.get('/products', async (req, res) => {
             const query = {};
@@ -27,12 +30,40 @@ async function run(){
             const products = await cursor.toArray();
             res.send(products);
         })
-
+        // get single product
         app.get('/products/:id', async (req, res) =>{
             const id =  req.params.id;
             const query = { _id: ObjectId(id) };
             const product = await productCollection.findOne(query);
             res.send(product);
+        })
+
+        // get orders by email from orders
+        app.get('/order', async (req, res) =>{
+          const email = req.query.email;
+          const query = {email:email};
+          const orders = await orderCollection.find(query).toArray();
+          res.send(orders);
+        })
+
+        // post orders to database
+        app.post('/order', async (req, res) =>{
+          const order = req.body;
+          const result = await orderCollection.insertOne(order);
+          res.send(result);
+        })
+
+        // put users to new collection
+        app.put('/user/:email', async (req, res) =>{
+          const email = req.params.email;
+          const user = req.body;
+          const filter = {email:email};
+          const options = { upsert:true }
+          const updateDoc = {
+            $set: user
+        };
+          const result = await userCollection.updateOne(filter, updateDoc, options);
+          res.send(result);
         })
     }
     finally{
