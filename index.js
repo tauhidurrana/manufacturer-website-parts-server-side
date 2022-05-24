@@ -83,6 +83,12 @@ async function run(){
           res.send(users);
         })
 
+        // Add a new product by admin
+        app.post('/products', async(req, res)=>{
+          const newProduct = req.body;
+          const result = await productCollection.insertOne(newProduct);
+          res.send(result);
+      })
         // post orders to database
         app.post('/order', async (req, res) =>{
           const order = req.body;
