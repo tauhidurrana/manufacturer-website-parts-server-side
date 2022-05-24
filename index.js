@@ -96,7 +96,7 @@ async function run(){
           res.send({result, token});
         })
 
-        // user admin api
+        // user admin api put
         app.put('/user/admin/:email', verifyJWT, async (req, res) =>{
           const email = req.params.email;
           const requester = req.decoded.email;
@@ -113,6 +113,14 @@ async function run(){
             res.status(403).send({message: 'forbidden'})
           }
         })
+
+        // get admin to verify admin role
+        app.get('/admin/:email', async (req, res) => {
+          const email = req.params.email;
+          const user = await userCollection.findOne({ email: email });
+          const isAdmin = user.role === 'admin';
+          res.send({ admin: isAdmin })
+      })
 
         
         
