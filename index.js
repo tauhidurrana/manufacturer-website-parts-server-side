@@ -69,6 +69,14 @@ async function run(){
           }
         })
 
+        // get order id for payment from order collection
+        app.get('/order/:id', verifyJWT, async (req, res)=>{
+          const id = req.params.id;
+          const query = {_id: ObjectId(id)}
+          const order = await orderCollection.findOne(query);
+          res.send(order);
+        })
+
         // get all users from user collection
         app.get('/user', verifyJWT, async (req, res)=>{
           const users = await userCollection.find().toArray();
