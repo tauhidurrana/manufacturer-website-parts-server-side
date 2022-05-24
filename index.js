@@ -16,6 +16,23 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  console.log(authHeader);
+  if (!authHeader) {
+      return res.status(401).send({ message: 'UnAuthorized Access' })
+  }
+  const token = authHeader.split(' ')[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+      if (err) {
+          console.log(err);
+          return res.status(403).send({ message: 'Forbidden Access' })
+      }
+      req.decoded = decoded;
+      next();
+  });
+}
+
 async function run(){
     try{
         await client.connect();
@@ -39,11 +56,17 @@ async function run(){
         })
 
         // get orders by email from orders
-        app.get('/order', async (req, res) =>{
+        app.get('/order', verifyJWT, async (req, res) =>{
           const email = req.query.email;
-          const query = {email:email};
-          const orders = await orderCollection.find(query).toArray();
-          res.send(orders);
+          const decodedEmail = req.decoded.email;
+          if(email === decodedEmail){
+            const query = {email:email};
+            const orders = await orderCollection.find(query).toArray();
+            return res.send(orders);
+          }
+          else{
+            return res.status(403).send({message: 'forbidden Access'})
+          }
         })
 
         // get all users from user collection
@@ -69,8 +92,24 @@ async function run(){
             $set: user
         };
           const result = await userCollection.updateOne(filter, updateDoc, options);
+          const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1hr' })
+          res.send({result, token});
+        })
+
+        // user admin api
+        app.put('/user/admin/:email', async (req, res) =>{
+          const email = req.params.email;
+          const filter = {email:email};
+          
+          const updateDoc = {
+            $set: {role:'admin'},
+        };
+          const result = await userCollection.updateOne(filter, updateDoc);
           res.send(result);
         })
+
+        
+        
     }
     finally{
 
