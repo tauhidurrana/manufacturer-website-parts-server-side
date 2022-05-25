@@ -39,6 +39,7 @@ async function run(){
         const productCollection = client.db('computer-parts-manufacturer').collection('products');
         const orderCollection = client.db('computer-parts-manufacturer').collection('orders');
         const userCollection = client.db('computer-parts-manufacturer').collection('users');
+        const reviewCollection = client.db('computer-parts-manufacturer').collection('reviews');
        
         // get all products API
         app.get('/products', async (req, res) => {
@@ -89,6 +90,14 @@ async function run(){
           const result = await productCollection.insertOne(newProduct);
           res.send(result);
       })
+
+        // Add a Review
+        app.post('/reviews', async(req, res)=>{
+          const newReview = req.body;
+          const result = await reviewCollection.insertOne(newReview);
+          res.send(result);
+      })
+
         // post orders to database
         app.post('/order', async (req, res) =>{
           const order = req.body;
