@@ -78,7 +78,7 @@ async function run(){
         })
 
         // get all users from user collection
-        app.get('/user', verifyJWT, async (req, res)=>{
+        app.get('/user',  async (req, res)=>{
           const users = await userCollection.find().toArray();
           res.send(users);
         })
@@ -108,6 +108,19 @@ async function run(){
           const result = await userCollection.updateOne(filter, updateDoc, options);
           const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1hr' })
           res.send({result, token});
+        })
+
+        // update profile
+        app.put('/user/update/:email', async (req, res) =>{
+          const email = req.params.email;
+          const user = req.body;
+          const filter = {email:email};
+          const options = { upsert:true }
+          const updateDoc = {
+            $set: user
+        };
+          const result = await userCollection.updateOne(filter, updateDoc, options);
+          res.send(result);
         })
 
         // user admin api put
