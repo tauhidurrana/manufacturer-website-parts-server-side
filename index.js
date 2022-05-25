@@ -42,6 +42,7 @@ async function run(){
         const orderCollection = client.db('computer-parts-manufacturer').collection('orders');
         const userCollection = client.db('computer-parts-manufacturer').collection('users');
         const reviewCollection = client.db('computer-parts-manufacturer').collection('reviews');
+        const paymentCollection = client.db('computer-parts-manufacturer').collection('payments');
        
         // get all products API
         app.get('/products', async (req, res) => {
@@ -178,6 +179,23 @@ async function run(){
         });
         res.send({clientSecret: paymentIntent.client_secret})
       });
+
+      // patch api for stripe
+      app.patch('/order/:id', async (req, res)=>{
+        const id = req.params.id;
+        const payment = req.body;
+        const filter = {_id: ObjectId(id)};
+        const updatedDoc = {
+          $set: {
+            paid: true,
+            transactionId: payment.transactionId,
+          }
+      }
+
+      const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
+      const result = await paymentCollection.insertOne(payment);
+      res.send(updatedDoc);
+      })
         
         
     }
