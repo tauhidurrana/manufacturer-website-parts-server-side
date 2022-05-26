@@ -45,14 +45,14 @@ async function run(){
         const paymentCollection = client.db('computer-parts-manufacturer').collection('payments');
        
         // get all products API
-        app.get('/products', async (req, res) => {
+        app.get('/products',  async (req, res) => {
             const query = {};
             const cursor = productCollection.find(query);
             const products = await cursor.toArray();
             res.send(products);
         })
         // get single product
-        app.get('/products/:id', async (req, res) =>{
+        app.get('/products/:id',  async (req, res) =>{
             const id =  req.params.id;
             const query = { _id: ObjectId(id) };
             const product = await productCollection.findOne(query);
@@ -60,7 +60,7 @@ async function run(){
         })
 
         // get orders by email from orders
-        app.get('/order', verifyJWT, async (req, res) =>{
+        app.get('/order',verifyJWT, async (req, res) =>{
           const email = req.query.email;
           const decodedEmail = req.decoded.email;
           if(email === decodedEmail){
@@ -140,6 +140,19 @@ async function run(){
           const result = await userCollection.updateOne(filter, updateDoc, options);
           res.send(result);
         })
+
+      //    // update available quantity
+      //    app.put('/product/update/:id', async(req, res) => {
+      //     const id = req.params.id;
+      //     const data = req.body;
+      //     const filter = {_id: ObjectId(id)};
+      //     const options = { upsert: true}
+      //     const updateDocument = {
+      //         $set: {...data},
+      //     }
+      //     const result = await productCollection.updateOne(filter, updateDocument, options);
+      //     res.send(result);
+      // });
 
         // user admin api put
         app.put('/user/admin/:email', verifyJWT, async (req, res) =>{
